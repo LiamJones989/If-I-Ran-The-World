@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>If I Ran the World — Deep Country Simulator</title>
+  <title>If I Ran the World — Deep Simulator (Diplomacy Update)</title>
   <style>
     :root{
       --bg:#0b1220; --panel:#0f1a30; --card:#111b2e;
@@ -15,14 +15,15 @@
     body{
       margin:0; color:var(--text);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background: radial-gradient(900px 600px at 20% -10%, rgba(78,161,255,.25), transparent 60%),
-                  radial-gradient(900px 600px at 80% 0%, rgba(93,255,154,.15), transparent 60%),
-                  linear-gradient(180deg,#070b15, #0b1220);
+      background:
+        radial-gradient(900px 600px at 20% -10%, rgba(78,161,255,.25), transparent 60%),
+        radial-gradient(900px 600px at 80% 0%, rgba(93,255,154,.15), transparent 60%),
+        linear-gradient(180deg,#070b15, #0b1220);
     }
-    .wrap{max-width:1250px;margin:0 auto;padding:18px}
+    .wrap{max-width:1280px;margin:0 auto;padding:18px}
     .top{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
     h1{margin:0;font-size:1.55rem}
-    .sub{color:var(--muted);font-size:.95rem;max-width:900px;line-height:1.35;margin-top:6px}
+    .sub{color:var(--muted);font-size:.95rem;max-width:950px;line-height:1.35;margin-top:6px}
     .pill{
       display:inline-flex;gap:10px;align-items:center;
       border:1px solid var(--stroke); background:rgba(255,255,255,.06);
@@ -31,8 +32,8 @@
       white-space:nowrap;
     }
 
-    .layout{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;margin-top:14px}
-    @media (max-width: 980px){ .layout{grid-template-columns:1fr} }
+    .layout{display:grid;grid-template-columns:1fr 1.25fr;gap:16px;margin-top:14px}
+    @media (max-width: 1020px){ .layout{grid-template-columns:1fr} }
 
     .card{
       background:rgba(17,27,46,.92);
@@ -47,7 +48,7 @@
     .small{font-size:.92rem;color:var(--muted)}
     .tiny{font-size:.82rem;color:var(--muted)}
     .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width: 520px){ .split{grid-template-columns:1fr} }
+    @media (max-width: 560px){ .split{grid-template-columns:1fr} }
 
     /* MAP */
     .mapWrap{display:grid;grid-template-columns:1fr;gap:10px}
@@ -57,35 +58,54 @@
       border-radius:16px;
       padding:10px;
       overflow:hidden;
+      position:relative;
     }
     svg{width:100%;height:auto;display:block}
+
+    .ocean{
+      fill: rgba(78,161,255,.06);
+      stroke: rgba(255,255,255,.06);
+      stroke-width: 1;
+    }
+    .land{
+      fill: rgba(255,255,255,.08);
+      stroke: rgba(255,255,255,.10);
+      stroke-width: 1;
+    }
+
     .country{
       cursor:pointer;
-      fill: rgba(78,161,255,.18);
-      stroke: rgba(255,255,255,.18);
-      stroke-width: 1;
+      fill: rgba(78,161,255,.12);
+      stroke: rgba(255,255,255,.25);
+      stroke-width: 1.4;
       transition: .12s transform ease, .12s fill ease, .12s stroke ease;
       transform-origin: center;
     }
     .country:hover{
-      fill: rgba(78,161,255,.28);
-      stroke: rgba(78,161,255,.55);
-      transform: translateY(-1px);
+      fill: rgba(78,161,255,.22);
+      stroke: rgba(78,161,255,.65);
+      transform: translateY(-0.5px);
     }
     .country.selected{
-      fill: rgba(93,255,154,.25);
-      stroke: rgba(93,255,154,.65);
+      fill: rgba(93,255,154,.18);
+      stroke: rgba(93,255,154,.75);
+      stroke-width: 2;
+      filter: drop-shadow(0 0 6px rgba(93,255,154,.18));
     }
-    .legend{
-      display:flex;gap:10px;flex-wrap:wrap;align-items:center
+    .label{
+      fill: rgba(255,255,255,.70);
+      font-size: 13px;
+      font-family: system-ui,Segoe UI,Roboto,Arial;
+      pointer-events:none;
     }
+    .legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .dot{width:10px;height:10px;border-radius:999px;display:inline-block;border:1px solid var(--stroke)}
     .dot.sel{background:rgba(93,255,154,.35)}
     .dot.other{background:rgba(78,161,255,.22)}
 
     /* STATS */
     .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-    @media (max-width: 720px){ .stats{grid-template-columns:1fr} }
+    @media (max-width: 760px){ .stats{grid-template-columns:1fr} }
     .stat{
       background:rgba(15,26,48,.75);
       border:1px solid var(--stroke);
@@ -93,35 +113,45 @@
       padding:10px;
     }
     .stat .k{color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;gap:10px}
-    .stat .v{font-size:1.15rem;font-weight:750;margin-top:4px}
+    .stat .v{font-size:1.15rem;font-weight:750;margin-top:4px;display:flex;justify-content:space-between;align-items:baseline}
+    .stat .v span:last-child{font-size:.88rem;color:var(--muted);font-weight:650}
     .bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
     .bar>div{height:100%;border-radius:999px;width:50%}
-    .badr{color:#ffd0d0}
-    .goodr{color:#d9ffe9}
-    .warnr{color:#fff1c7}
 
-    /* POLICIES */
+    /* POLICIES + DIPLOMACY */
+    .sections{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
+    .panel{
+      background:rgba(10,15,30,.55);
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:10px;
+    }
+    .panelHead{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .panelHead b{font-size:.98rem}
+    .panelHead .pill{padding:6px 10px}
+
     .policies{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
     .policy{
-      background:rgba(10,15,30,.50);
-      border:1px solid var(--stroke);
+      background:rgba(17,27,46,.55);
+      border:1px solid rgba(255,255,255,.08);
       border-radius:14px;
       padding:10px;
       display:flex;flex-direction:column;gap:8px;
     }
     .policyTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .policyName{font-weight:750}
+    .policyName{font-weight:800}
     .policyCost{
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       color:var(--muted);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.06);
       border-radius:999px;
       padding:4px 8px;
       white-space:nowrap;
     }
     .policyDesc{color:var(--muted);font-size:.92rem;line-height:1.35}
-    .policyBtns{display:flex;gap:10px;flex-wrap:wrap}
+
+    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
     button{
       cursor:pointer;
       border:1px solid rgba(255,255,255,.12);
@@ -129,7 +159,7 @@
       color:var(--text);
       padding:10px 12px;
       border-radius:12px;
-      font-weight:700;
+      font-weight:800;
       transition:.15s transform ease, .15s border-color ease, .15s opacity ease;
     }
     button:hover{transform:translateY(-1px);border-color:rgba(78,161,255,.45)}
@@ -139,9 +169,35 @@
     button.good{background:linear-gradient(180deg, rgba(93,255,154,.18), rgba(93,255,154,.08))}
     button:disabled{opacity:.55;cursor:not-allowed;transform:none}
 
+    select{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      outline:none;
+      font-weight:700;
+      min-width: 210px;
+    }
+    option{background:#0b1220}
+
+    .ratingRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .meter{flex:1;min-width:180px}
+    .meter .bar{height:10px}
+    .meterNote{font-size:.85rem;color:var(--muted)}
+    .badge{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      border-radius:999px;
+      padding:6px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
     /* LOG */
     .log{
-      max-height:420px;overflow:auto;
+      max-height:440px;overflow:auto;
       border-radius:14px;
       background:rgba(10,15,30,.55);
       border:1px solid var(--stroke);
@@ -173,11 +229,11 @@
       <div>
         <h1>If I Ran the World 🌎 — Deep Simulator</h1>
         <div class="sub">
-          Pick a country, manage your budget + political capital, and survive elections.
-          Random events react to your stats, traits, and instability. Keeping everyone happy is the real final boss.
+          Real world-map styling + outlined country selection + diplomacy.
+          Build alliances, request aid (at a cost), and don’t let partners cut ties and trigger a global shock.
         </div>
       </div>
-      <div class="pill" id="hudLine">Loading…</div>
+      <div class="pill" id="hudLine">Pick a country • Start game</div>
     </div>
 
     <div class="layout">
@@ -187,62 +243,70 @@
 
         <div class="mapWrap">
           <div class="mapBox">
-            <!-- Stylized clickable world map (not geographically perfect, but works offline in one file) -->
-            <svg viewBox="0 0 1000 420" role="img" aria-label="World map country selector">
-              <!-- Ocean background -->
-              <rect x="0" y="0" width="1000" height="420" fill="rgba(78,161,255,.06)"/>
+            <!-- World-map style SVG: continents silhouette + clickable country outlines -->
+            <svg viewBox="0 0 1100 520" role="img" aria-label="World map country selector">
+              <rect class="ocean" x="0" y="0" width="1100" height="520" rx="18"></rect>
 
-              <!-- NORTH AMERICA -->
-              <rect class="country" data-key="CAN" x="70"  y="70"  width="170" height="90" rx="12"></rect>
-              <rect class="country" data-key="USA" x="90"  y="165" width="210" height="95" rx="12"></rect>
-              <rect class="country" data-key="MEX" x="155" y="265" width="160" height="60" rx="12"></rect>
+              <!-- Continents (stylized but "world-map" looking) -->
+              <path class="land" d="M70,140 C120,80 230,70 300,120 C350,155 360,210 330,245 C290,300 190,310 130,270 C90,240 40,190 70,140 Z"></path>
+              <path class="land" d="M310,300 C330,270 370,260 410,290 C455,325 455,390 420,430 C385,470 335,460 320,415 C305,370 285,330 310,300 Z"></path>
+              <path class="land" d="M470,130 C520,95 590,90 640,115 C670,130 695,150 700,180 C705,210 690,245 660,260 C615,282 550,275 505,250 C470,230 440,165 470,130 Z"></path>
+              <path class="land" d="M515,260 C560,250 635,265 675,300 C710,330 725,385 700,425 C670,475 610,492 560,470 C525,455 500,420 495,380 C490,330 480,280 515,260 Z"></path>
+              <path class="land" d="M690,140 C740,95 820,90 910,120 C975,140 1010,200 980,250 C950,305 860,320 810,295 C760,270 690,240 675,200 C665,175 670,155 690,140 Z"></path>
+              <path class="land" d="M820,330 C860,300 950,300 1000,340 C1040,372 1035,430 990,455 C940,485 870,475 835,435 C810,407 790,355 820,330 Z"></path>
 
-              <!-- SOUTH AMERICA -->
-              <rect class="country" data-key="BRA" x="235" y="305" width="190" height="95" rx="12"></rect>
+              <!-- Clickable outlined countries (only the ones in your game) -->
+              <!-- North America -->
+              <path class="country" data-key="CAN" d="M105,145 C160,105 245,105 290,140 C305,152 310,175 300,195 C285,220 230,230 185,220 C145,212 95,175 105,145 Z"></path>
+              <path class="country" data-key="USA" d="M120,205 C170,185 255,185 300,212 C325,228 330,255 310,272 C285,295 215,305 165,285 C130,272 95,235 120,205 Z"></path>
+              <path class="country" data-key="MEX" d="M170,285 C205,275 250,278 270,295 C285,310 278,330 258,340 C230,355 185,350 170,330 C160,318 155,292 170,285 Z"></path>
 
-              <!-- EUROPE -->
-              <rect class="country" data-key="UK"  x="455" y="120" width="70"  height="55" rx="12"></rect>
-              <rect class="country" data-key="FRA" x="530" y="170" width="85"  height="60" rx="12"></rect>
-              <rect class="country" data-key="DEU" x="620" y="150" width="90"  height="55" rx="12"></rect>
+              <!-- South America -->
+              <path class="country" data-key="BRA" d="M335,322 C375,298 430,305 455,335 C475,360 470,400 440,430 C410,460 365,462 345,432 C325,402 305,350 335,322 Z"></path>
 
-              <!-- AFRICA -->
-              <rect class="country" data-key="ZAF" x="560" y="295" width="170" height="85" rx="12"></rect>
+              <!-- Europe -->
+              <path class="country" data-key="UK" d="M500,155 C512,145 530,145 540,155 C548,162 548,176 540,183 C528,194 508,190 500,180 C493,172 492,162 500,155 Z"></path>
+              <path class="country" data-key="FRA" d="M545,195 C562,182 585,182 600,195 C612,205 612,222 600,232 C582,245 555,240 545,228 C538,220 536,205 545,195 Z"></path>
+              <path class="country" data-key="DEU" d="M610,175 C628,165 650,168 662,182 C672,195 668,214 652,223 C632,235 610,228 604,210 C600,196 598,182 610,175 Z"></path>
 
-              <!-- EURASIA -->
-              <rect class="country" data-key="RUS" x="640" y="70"  width="300" height="80" rx="12"></rect>
+              <!-- Africa -->
+              <path class="country" data-key="ZAF" d="M585,412 C615,392 665,395 690,420 C708,440 700,465 670,480 C640,495 605,490 585,470 C570,455 560,430 585,412 Z"></path>
 
-              <!-- ASIA -->
-              <rect class="country" data-key="CHN" x="760" y="160" width="180" height="85" rx="12"></rect>
-              <rect class="country" data-key="IND" x="700" y="255" width="160" height="70" rx="12"></rect>
-              <rect class="country" data-key="JPN" x="930" y="210" width="55"  height="55" rx="12"></rect>
+              <!-- Eurasia -->
+              <path class="country" data-key="RUS" d="M720,130 C780,100 910,108 965,140 C990,155 995,182 975,200 C940,235 825,240 755,205 C720,188 680,150 720,130 Z"></path>
 
-              <!-- OCEANIA -->
-              <rect class="country" data-key="AUS" x="835" y="315" width="140" height="70" rx="12"></rect>
+              <!-- Asia -->
+              <path class="country" data-key="CHN" d="M780,200 C825,175 905,182 940,210 C965,230 960,265 925,285 C885,308 820,300 790,270 C768,248 755,217 780,200 Z"></path>
+              <path class="country" data-key="IND" d="M740,292 C768,272 815,275 838,295 C855,310 852,335 830,350 C800,372 762,365 745,345 C732,330 720,305 740,292 Z"></path>
+              <path class="country" data-key="JPN" d="M1005,245 C1018,235 1035,238 1042,252 C1048,265 1040,282 1024,288 C1006,295 995,280 995,265 C995,255 998,250 1005,245 Z"></path>
+
+              <!-- Oceania -->
+              <path class="country" data-key="AUS" d="M870,392 C910,368 980,372 1015,405 C1040,430 1028,470 985,485 C940,502 890,490 865,455 C848,430 842,410 870,392 Z"></path>
 
               <!-- Labels -->
-              <g fill="rgba(255,255,255,.55)" font-size="16" font-family="system-ui,Segoe UI,Roboto,Arial">
-                <text x="110" y="125">Canada</text>
-                <text x="130" y="220">USA</text>
-                <text x="180" y="305">Mexico</text>
-                <text x="280" y="360">Brazil</text>
+              <g class="label">
+                <text x="155" y="165">Canada</text>
+                <text x="165" y="250">USA</text>
+                <text x="205" y="335">Mexico</text>
+                <text x="370" y="415">Brazil</text>
 
-                <text x="468" y="155">UK</text>
-                <text x="540" y="205">France</text>
-                <text x="635" y="185">Germany</text>
+                <text x="505" y="145">UK</text>
+                <text x="545" y="185">France</text>
+                <text x="618" y="168">Germany</text>
 
-                <text x="710" y="115">Russia</text>
-                <text x="790" y="205">China</text>
-                <text x="725" y="295">India</text>
-                <text x="938" y="245">Japan</text>
+                <text x="740" y="120">Russia</text>
+                <text x="790" y="195">China</text>
+                <text x="740" y="287">India</text>
+                <text x="1008" y="235">Japan</text>
 
-                <text x="590" y="345">South Africa</text>
-                <text x="870" y="360">Australia</text>
+                <text x="600" y="410">South Africa</text>
+                <text x="900" y="385">Australia</text>
               </g>
             </svg>
           </div>
 
           <div class="legend tiny">
-            <span class="dot other"></span> Click a country •
+            <span class="dot other"></span> Click outlined countries •
             <span class="dot sel"></span> Selected
           </div>
         </div>
@@ -269,8 +333,7 @@
         </div>
 
         <div class="tiny muted" style="margin-top:10px">
-          Note: this is a stylized map so it loads instantly in one file (no external assets).
-          If you want a “real” world map later, I can convert this to a TopoJSON/SVG map too.
+          Diplomacy tip: keep alliance ratings high. Aid is tempting, but too much = partners cut ties and your stats take a hit.
         </div>
       </div>
 
@@ -286,11 +349,49 @@
 
         <div class="stats" id="statsGrid"></div>
 
-        <div class="policies" id="policies"></div>
+        <div class="sections">
+          <div class="panel">
+            <div class="panelHead">
+              <b>Diplomacy</b>
+              <span class="pill" id="allyCountPill">Allies: 0</span>
+            </div>
 
-        <div class="row" style="margin-top:10px">
-          <button class="secondary" onclick="advanceTurn(false)">End Month (no policy)</button>
-          <button class="secondary" onclick="toggleAutoEvents()">Toggle: Extra Random Events</button>
+            <div class="controls">
+              <select id="diploTarget"></select>
+              <span class="badge" id="relationBadge">Alliance Rating: —</span>
+            </div>
+
+            <div class="ratingRow" style="margin-top:10px">
+              <div class="meter">
+                <div class="bar"><div id="relationBar"></div></div>
+                <div class="meterNote" id="relationNote">Pick a target nation to see your relationship.</div>
+              </div>
+              <span class="badge" id="allyBadge">Status: —</span>
+            </div>
+
+            <div class="controls">
+              <button class="good" onclick="offerAlliance()" id="offerBtn">Offer Alliance (PC 2)</button>
+              <button class="secondary" onclick="requestAid()" id="aidBtn">Request Financial Aid</button>
+              <button class="secondary" onclick="sendTradeMission()" id="tradeBtn">Trade Mission (PC 1)</button>
+            </div>
+
+            <div class="tiny muted" style="margin-top:8px">
+              Rules: Offer Alliance works best with strong <b>Economy</b> + <b>Approval</b>. Aid increases <b>Debt</b> and lowers <b>Alliance Rating</b>. If rating gets too low, they may cut ties and shock your stats.
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panelHead">
+              <b>Policies</b>
+              <span class="pill" id="stabilityPill">Stability: —</span>
+            </div>
+            <div class="policies" id="policies"></div>
+
+            <div class="controls">
+              <button class="secondary" onclick="advanceTurn(false)">End Month (no policy)</button>
+              <button class="secondary" onclick="toggleExtraEvents()">Toggle: Extra Random Events</button>
+            </div>
+          </div>
         </div>
 
         <div class="log" id="log"></div>
@@ -299,7 +400,7 @@
           <div class="tiny muted">
             Lose conditions: any stat hits <b>0</b>, or you lose the election (Approval too low).
           </div>
-          <div class="pill" id="stabilityPill">Stability: —</div>
+          <div class="pill" id="hudMini">—</div>
         </div>
       </div>
     </div>
@@ -307,7 +408,7 @@
 
 <script>
 /* =========================================================
-   DATA: countries, stats, policies, events
+   DATA
 ========================================================= */
 
 const STAT_KEYS = [
@@ -325,235 +426,174 @@ const COUNTRIES = {
   USA: { name:"United States", blurb:"A rich, powerful country with high expectations and political polarization.",
     traits:["Global Hegemon","Polarized Politics","High Consumption"],
     start:{ economy:68, approval:52, security:60, env:45, health:58, education:60, ineq:55, debt:52 },
-    budgetB: 120, debtPct: 75, eventMods:{ unrest:+1, climate:+1, market:+2 }
+    budgetB: 120, debtPct: 75
   },
   CAN: { name:"Canada", blurb:"Stable institutions, strong public services, and climate pressure.",
     traits:["High Trust","Resource Economy","Cold Climate"],
     start:{ economy:60, approval:60, security:62, env:58, health:70, education:66, ineq:40, debt:48 },
-    budgetB: 70, debtPct: 55, eventMods:{ climate:+2, unrest:-1, market:+1 }
+    budgetB: 70, debtPct: 55
   },
   MEX: { name:"Mexico", blurb:"Growing economy with security challenges and inequality pressure.",
-    traits:["Emerging Market","Cartel Pressure","Young Workforce"],
+    traits:["Emerging Market","Security Pressure","Young Workforce"],
     start:{ economy:52, approval:50, security:42, env:50, health:52, education:50, ineq:62, debt:50 },
-    budgetB: 45, debtPct: 60, eventMods:{ security:+3, unrest:+1, market:+1 }
+    budgetB: 45, debtPct: 60
   },
   BRA: { name:"Brazil", blurb:"Huge potential, but inequality and environment tradeoffs hit hard.",
     traits:["Commodity Giant","Inequality Pressure","Rainforest"],
     start:{ economy:50, approval:48, security:44, env:48, health:52, education:48, ineq:70, debt:55 },
-    budgetB: 55, debtPct: 68, eventMods:{ climate:+3, unrest:+2, market:+2 }
+    budgetB: 55, debtPct: 68
   },
   UK: { name:"United Kingdom", blurb:"Strong institutions and services, but market shocks and politics matter.",
     traits:["Service Economy","High Expectations","Aging Population"],
     start:{ economy:58, approval:52, security:58, env:55, health:62, education:60, ineq:50, debt:58 },
-    budgetB: 65, debtPct: 72, eventMods:{ market:+2, health:+1, unrest:+1 }
+    budgetB: 65, debtPct: 72
   },
   FRA: { name:"France", blurb:"Big public sector and labor power. Reforms can trigger protests fast.",
     traits:["Strong Labor","Big State","Street Protests"],
     start:{ economy:55, approval:50, security:56, env:58, health:66, education:60, ineq:48, debt:62 },
-    budgetB: 70, debtPct: 80, eventMods:{ unrest:+3, market:+1 }
+    budgetB: 70, debtPct: 80
   },
   DEU: { name:"Germany", blurb:"Industrial strength and education, but energy transitions are costly.",
     traits:["Industrial Base","Export Economy","Energy Transition"],
     start:{ economy:60, approval:55, security:60, env:56, health:64, education:66, ineq:42, debt:50 },
-    budgetB: 75, debtPct: 60, eventMods:{ market:+2, climate:+1 }
+    budgetB: 75, debtPct: 60
   },
   RUS: { name:"Russia", blurb:"Security focus and resource power, but sanctions/markets can bite hard.",
     traits:["Resource Power","Security State","Sanctions Risk"],
     start:{ economy:48, approval:52, security:65, env:45, health:50, education:55, ineq:55, debt:45 },
-    budgetB: 55, debtPct: 45, eventMods:{ market:+3, unrest:+1, security:+1 }
+    budgetB: 55, debtPct: 45
   },
   CHN: { name:"China", blurb:"Massive economy and state capacity, but environment and slowdown risk.",
     traits:["High State Capacity","Manufacturing Giant","Air Quality Pressure"],
     start:{ economy:62, approval:55, security:62, env:42, health:55, education:58, ineq:58, debt:65 },
-    budgetB: 110, debtPct: 85, eventMods:{ market:+3, climate:+2, unrest:+1 }
+    budgetB: 110, debtPct: 85
   },
   IND: { name:"India", blurb:"Huge population and growth potential, but infrastructure and inequality are tough.",
     traits:["Demographic Boom","Infrastructure Gaps","Fast Growth"],
     start:{ economy:52, approval:54, security:52, env:44, health:48, education:50, ineq:62, debt:55 },
-    budgetB: 65, debtPct: 70, eventMods:{ climate:+2, health:+2, market:+2 }
+    budgetB: 65, debtPct: 70
   },
   JPN: { name:"Japan", blurb:"High education and safety, but aging population pressures your budget.",
     traits:["Aging Society","High Tech","Disaster Risk"],
     start:{ economy:56, approval:55, security:68, env:58, health:70, education:70, ineq:40, debt:75 },
-    budgetB: 80, debtPct: 120, eventMods:{ disaster:+3, health:+2, market:+1 }
+    budgetB: 80, debtPct: 120
   },
   AUS: { name:"Australia", blurb:"Wealth and stability, but climate disasters and resource politics hit often.",
     traits:["Resource Economy","Wildfire Risk","High Living Standards"],
     start:{ economy:58, approval:56, security:62, env:52, health:66, education:64, ineq:46, debt:50 },
-    budgetB: 60, debtPct: 55, eventMods:{ climate:+3, disaster:+2, market:+1 }
+    budgetB: 60, debtPct: 55
   },
   ZAF: { name:"South Africa", blurb:"High inequality and infrastructure challenges. Big swings possible.",
     traits:["Inequality Crisis","Infrastructure Strain","Youth Unemployment"],
     start:{ economy:42, approval:45, security:44, env:52, health:46, education:44, ineq:80, debt:62 },
-    budgetB: 35, debtPct: 78, eventMods:{ unrest:+3, security:+2, market:+2 }
+    budgetB: 35, debtPct: 78
   }
 };
 
-/* Policies: each costs Political Capital (PC) and changes budget/debt + stats */
+const ALL_KEYS = Object.keys(COUNTRIES);
+
+/* Starting relationship biases (feel free to edit these later) */
+function baseRelation(a,b){
+  if(a===b) return 0;
+  const pair = [a,b].sort().join("-");
+  const preset = {
+    "UK-USA": 68,
+    "CAN-USA": 70,
+    "FRA-DEU": 66,
+    "FRA-UK": 60,
+    "DEU-UK": 58,
+    "AUS-USA": 62,
+    "JPN-USA": 63,
+    "RUS-USA": 35,
+    "CHN-USA": 40,
+    "CHN-RUS": 58,
+    "IND-USA": 54,
+    "IND-CHN": 42
+  };
+  return preset[pair] ?? 52;
+}
+
 const POLICIES = [
-  {
-    id:"tax_cut",
-    name:"Cut Taxes 💸",
-    costPC: 2,
+  { id:"tax_cut", name:"Cut Taxes 💸", costPC:2,
     desc:"Boosts spending and short-term growth. Budget drops; debt tends to rise.",
     apply:(s,g)=>{ g.budgetB -= 10; g.debtPct += 2; s.economy += 6; s.approval += 3; s.ineq += 2; s.env -= 1; }
   },
-  {
-    id:"tax_raise",
-    name:"Raise Taxes 🧾",
-    costPC: 2,
+  { id:"tax_raise", name:"Raise Taxes 🧾", costPC:2,
     desc:"More revenue for services. Approval drops at first, inequality can improve.",
     apply:(s,g)=>{ g.budgetB += 10; g.debtPct -= 1; s.economy -= 2; s.approval -= 4; s.ineq -= 4; s.health += 1; }
   },
-  {
-    id:"healthcare",
-    name:"Expand Healthcare 🏥",
-    costPC: 3,
+  { id:"healthcare", name:"Expand Healthcare 🏥", costPC:3,
     desc:"Improves health and approval. Expensive; long-term productivity improves a bit.",
     apply:(s,g)=>{ g.budgetB -= 12; g.debtPct += 1; s.health += 8; s.approval += 4; s.economy += 1; }
   },
-  {
-    id:"education",
-    name:"Boost Education 📚",
-    costPC: 3,
+  { id:"education", name:"Boost Education 📚", costPC:3,
     desc:"Long-term growth lever. Costly now; reduces inequality slowly.",
     apply:(s,g)=>{ g.budgetB -= 10; s.education += 8; s.economy += 2; s.ineq -= 3; s.approval += 1; }
   },
-  {
-    id:"policing",
-    name:"Increase Policing 🚓",
-    costPC: 2,
+  { id:"policing", name:"Increase Policing 🚓", costPC:2,
     desc:"Improves security. If approval is low, this can backfire into unrest.",
     apply:(s,g)=>{ g.budgetB -= 6; s.security += 7; s.approval -= (s.approval < 45 ? 4 : 1); }
   },
-  {
-    id:"renewables",
-    name:"Invest in Renewables ☀️",
-    costPC: 3,
-    desc:"Big environment gains; short-term economic pain. Helps avoid disaster events later.",
+  { id:"renewables", name:"Invest in Renewables ☀️", costPC:3,
+    desc:"Big environment gains; short-term economic pain. Helps reduce disaster risk.",
     apply:(s,g)=>{ g.budgetB -= 11; s.env += 10; s.economy -= 2; s.approval += 1; }
   },
-  {
-    id:"industry_dereg",
-    name:"Deregulate Industry 🏭",
-    costPC: 2,
+  { id:"industry_dereg", name:"Deregulate Industry 🏭", costPC:2,
     desc:"Boosts economy fast. Environment drops; health can degrade over time.",
     apply:(s,g)=>{ g.budgetB += 4; s.economy += 7; s.env -= 8; s.health -= 2; s.approval -= 2; }
   },
-  {
-    id:"welfare",
-    name:"Expand Welfare 🧑‍🤝‍🧑",
-    costPC: 3,
+  { id:"welfare", name:"Expand Welfare 🧑‍🤝‍🧑", costPC:3,
     desc:"Cuts inequality and unrest risk. Costs budget; may slow economy a bit.",
     apply:(s,g)=>{ g.budgetB -= 10; s.ineq -= 8; s.approval += 3; s.economy -= 1; }
   },
-  {
-    id:"anti_corruption",
-    name:"Anti-Corruption Crackdown 🔍",
-    costPC: 3,
-    desc:"Raises approval and efficiency. Can trigger elite backlash events.",
+  { id:"anti_corruption", name:"Anti-Corruption Crackdown 🔍", costPC:3,
+    desc:"Raises approval and efficiency. Can trigger elite backlash.",
     apply:(s,g)=>{ s.approval += 6; s.economy += 1; g.budgetB += 3; }
   }
 ];
 
-/* Events: weighted, conditional, some are “situational” */
 const EVENTS = [
-  // Market / economy
-  { id:"market_crash", tag:"bad", baseW:2, type:"market",
-    cond:(s,g)=> s.debt>60 || g.debtPct>90,
-    title:"Debt panic in markets",
-    text:"Investors lose confidence. Borrowing gets expensive and businesses freeze.",
-    effect:(s,g)=>{ s.economy -= 8; s.approval -= 4; s.debt += 4; g.debtPct += 4; }
+  { id:"market_wobble", tag:"info", baseW:4,
+    cond:(s,g)=> true,
+    title:"Global market wobble",
+    text:"Imports and borrowing costs shift slightly. Everyone argues about what it means.",
+    effect:(s,g)=>{ s.economy -= rint(0,3); s.approval -= rint(0,2); }
   },
-  { id:"startup_boom", tag:"good", baseW:3, type:"market",
-    cond:(s,g)=> s.education>55,
-    title:"Startup boom",
-    text:"New companies form fast. Jobs rise, but growth increases emissions.",
-    effect:(s,g)=>{ s.economy += 7; s.approval += 2; s.env -= 2; }
-  },
-
-  // Unrest / protests
-  { id:"mass_protest", tag:"bad", baseW:3, type:"unrest",
-    cond:(s,g)=> s.approval<45 || s.ineq>60,
+  { id:"protest", tag:"bad", baseW:3,
+    cond:(s,g)=> s.approval<48 || s.ineq>62,
     title:"Mass protests erupt",
-    text:"Crowds flood streets. Security costs spike and trust drops.",
-    effect:(s,g)=>{ s.approval -= 7; s.security -= 4; s.economy -= 3; }
+    text:"Crowds flood streets. Trust dips and security resources stretch thin.",
+    effect:(s,g)=>{ s.approval -= rint(4,8); s.security -= rint(2,5); s.economy -= rint(1,3); }
   },
-  { id:"unity_moment", tag:"good", baseW:2, type:"unrest",
-    cond:(s,g)=> s.approval>60,
-    title:"National unity moment",
-    text:"Public trust rises and reforms get easier—for now.",
-    effect:(s,g)=>{ s.approval += 5; }
-  },
-
-  // Security
-  { id:"crime_wave", tag:"bad", baseW:3, type:"security",
+  { id:"crime", tag:"bad", baseW:3,
     cond:(s,g)=> s.security<50,
     title:"Crime wave",
-    text:"Public feels unsafe. Businesses invest less and approval drops.",
-    effect:(s,g)=>{ s.security -= 6; s.approval -= 4; s.economy -= 2; }
+    text:"People feel unsafe. Investment drops and approval takes a hit.",
+    effect:(s,g)=>{ s.security -= rint(4,7); s.approval -= rint(2,5); s.economy -= rint(1,3); }
   },
-  { id:"intel_success", tag:"good", baseW:2, type:"security",
-    cond:(s,g)=> s.security>60,
-    title:"Major security operation succeeds",
-    text:"Threats reduced. Confidence rises.",
-    effect:(s,g)=>{ s.security += 4; s.approval += 2; }
-  },
-
-  // Climate / disasters
-  { id:"heatwave", tag:"warn", baseW:3, type:"climate",
+  { id:"heat", tag:"warn", baseW:3,
     cond:(s,g)=> s.env<55,
     title:"Severe heatwave",
-    text:"Power demand spikes. Health suffers and the economy slows.",
-    effect:(s,g)=>{ s.health -= 5; s.economy -= 4; s.env -= 3; s.approval -= 2; }
+    text:"Energy demand spikes. Health suffers and productivity slows.",
+    effect:(s,g)=>{ s.health -= rint(3,7); s.economy -= rint(2,5); s.env -= rint(1,4); s.approval -= rint(0,3); }
   },
-  { id:"floods", tag:"bad", baseW:2, type:"disaster",
-    cond:(s,g)=> s.env<60,
-    title:"Flooding damages infrastructure",
-    text:"Repairs cost billions. Public blames leadership.",
-    effect:(s,g)=>{ g.budgetB -= 12; s.economy -= 5; s.approval -= 4; }
+  { id:"breakthrough", tag:"good", baseW:2,
+    cond:(s,g)=> s.education>58,
+    title:"Innovation surge",
+    text:"New tech boosts productivity. Some environmental cost comes with growth.",
+    effect:(s,g)=>{ s.economy += rint(4,8); s.approval += rint(1,3); s.env -= rint(0,2); }
   },
-  { id:"green_dividend", tag:"good", baseW:2, type:"climate",
+  { id:"green_dividend", tag:"good", baseW:2,
     cond:(s,g)=> s.env>65,
-    title:"Green dividend",
-    text:"Cleaner air reduces hospital load and boosts productivity.",
-    effect:(s,g)=>{ s.health += 4; s.economy += 2; s.approval += 2; }
+    title:"Cleaner air dividend",
+    text:"Healthcare burden drops, productivity rises, and approval bumps up.",
+    effect:(s,g)=>{ s.health += rint(2,5); s.economy += rint(1,3); s.approval += rint(1,3); }
   },
-
-  // Health
-  { id:"flu_season", tag:"warn", baseW:3, type:"health",
-    cond:(s,g)=> s.health<60,
-    title:"Bad flu season",
-    text:"Hospitals strain and workers miss days.",
-    effect:(s,g)=>{ s.health -= 6; s.economy -= 3; s.approval -= 1; }
-  },
-  { id:"medical_breakthrough", tag:"good", baseW:1, type:"health",
-    cond:(s,g)=> s.education>60,
-    title:"Medical breakthrough",
-    text:"New treatments spread fast. Optimism rises.",
-    effect:(s,g)=>{ s.health += 7; s.approval += 3; }
-  },
-
-  // Politics
-  { id:"scandal", tag:"bad", baseW:2, type:"unrest",
+  { id:"scandal", tag:"bad", baseW:2,
     cond:(s,g)=> true,
-    title:"Government scandal",
-    text:"Trust takes a hit. Investigations distract leadership.",
-    effect:(s,g)=>{ s.approval -= 6; }
-  },
-  { id:"reform_passes", tag:"good", baseW:2, type:"unrest",
-    cond:(s,g)=> s.approval>55 && g.politicalCapital>3,
-    title:"Key reform passes",
-    text:"Momentum builds. But opponents prepare a counterattack.",
-    effect:(s,g)=>{ s.approval += 4; s.economy += 1; g.politicalCapital += 1; }
-  },
-
-  // Inequality feedback loop
-  { id:"strike_wave", tag:"bad", baseW:2, type:"unrest",
-    cond:(s,g)=> s.ineq>65,
-    title:"Strike wave hits the economy",
-    text:"Workers demand better pay. Output drops this month.",
-    effect:(s,g)=>{ s.economy -= 6; s.approval -= 2; }
+    title:"Political scandal",
+    text:"Investigations distract leadership. Trust drops.",
+    effect:(s,g)=>{ s.approval -= rint(3,7); }
   }
 ];
 
@@ -561,11 +601,39 @@ const EVENTS = [
    GAME STATE
 ========================================================= */
 let selectedKey = null;
-let game = null; // set on start
+let game = null;
 let extraEvents = false;
 
 function clamp(n){ return Math.max(0, Math.min(100, Math.round(n))); }
 function fmtB(n){ return `${Math.round(n)}B`; }
+function rint(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function rfloat(a,b){ return Math.random()*(b-a)+a; }
+
+function initMap(){
+  document.querySelectorAll(".country").forEach(n=>{
+    n.addEventListener("click", ()=>{
+      const key = n.getAttribute("data-key");
+      pickCountry(key);
+    });
+  });
+}
+
+function pickCountry(key){
+  selectedKey = key;
+  const c = COUNTRIES[key];
+
+  document.getElementById("countryKey").textContent = key;
+  document.getElementById("countryName").textContent = c.name;
+  document.getElementById("countryBlurb").textContent = c.blurb;
+  document.getElementById("traitsBox").innerHTML = c.traits.map(t => `• ${t}`).join("<br>");
+  document.getElementById("startBtn").disabled = false;
+
+  document.querySelectorAll(".country").forEach(n=>{
+    n.classList.toggle("selected", n.getAttribute("data-key") === key);
+  });
+
+  updateHUD();
+}
 
 function buildStatsUI(){
   const grid = document.getElementById("statsGrid");
@@ -576,9 +644,12 @@ function buildStatsUI(){
     box.innerHTML = `
       <div class="k">
         <span>${st.name}</span>
-        <span class="tiny" id="${st.key}_hint">${st.hint}</span>
+        <span class="tiny">${st.hint}</span>
       </div>
-      <div class="v" id="${st.key}_v">—</div>
+      <div class="v">
+        <span id="${st.key}_v">—</span>
+        <span id="${st.key}_sfx"></span>
+      </div>
       <div class="bar"><div id="${st.key}_b"></div></div>
       <div class="tiny muted" id="${st.key}_note"></div>
     `;
@@ -598,7 +669,7 @@ function buildPoliciesUI(){
         <div class="policyCost">PC ${pol.costPC}</div>
       </div>
       <div class="policyDesc">${pol.desc}</div>
-      <div class="policyBtns">
+      <div class="controls" style="margin-top:6px">
         <button onclick="doPolicy('${pol.id}')" id="btn_${pol.id}">Enact</button>
       </div>
     `;
@@ -607,7 +678,6 @@ function buildPoliciesUI(){
 }
 
 function colorFor(val, invert=false){
-  // invert means lower is better (inequality, debt)
   const v = invert ? (100 - val) : val;
   if(v < 30) return "rgba(255,90,90,.90)";
   if(v > 70) return "rgba(93,255,154,.85)";
@@ -628,36 +698,491 @@ function logEntry(tag, title, text){
   box.prepend(el);
 }
 
-function updateHUD(){
-  const hud = document.getElementById("hudLine");
-  if(!game){
-    hud.textContent = "Pick a country • Start game";
-    return;
-  }
-  const stab = stabilityScore();
-  hud.textContent = `${game.country.name} • Year ${game.year} • Month ${game.month} • Stability ${stab}`;
-}
-
 function stabilityScore(){
-  if(!game) return "—";
+  if(!game) return 0;
   const s = game.stats;
-  // invert inequality & debt
   const invIneq = 100 - s.ineq;
   const invDebt = 100 - s.debt;
   const avg = (s.economy + s.approval + s.security + s.env + s.health + s.education + invIneq + invDebt)/8;
   return clamp(avg);
 }
 
-function updateUI(){
-  updateHUD();
+function updateHUD(){
+  const hud = document.getElementById("hudLine");
+  if(!game){
+    hud.textContent = selectedKey ? `${COUNTRIES[selectedKey].name} • Ready to start` : "Pick a country • Start game";
+    return;
+  }
+  hud.textContent = `${game.country.name} • Year ${game.year} • Month ${game.month} • Stability ${stabilityScore()}`;
+  document.getElementById("hudMini").textContent = `Stability ${stabilityScore()} • Allies ${countAllies()}`;
+}
+
+function countAllies(){
+  if(!game) return 0;
+  return Object.values(game.relations).filter(r=>r.allied).length;
+}
+
+/* =========================================================
+   DIPLOMACY
+========================================================= */
+
+function initDiplomacyUI(){
+  const sel = document.getElementById("diploTarget");
+  sel.innerHTML = "";
+
+  const others = ALL_KEYS.filter(k=>k !== game.countryKey);
+  for(const k of others){
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = COUNTRIES[k].name;
+    sel.appendChild(opt);
+  }
+
+  sel.addEventListener("change", updateDiplomacyPanel);
+  updateDiplomacyPanel();
+}
+
+function relBarColor(v){
+  if(v < 25) return "rgba(255,90,90,.90)";
+  if(v > 70) return "rgba(93,255,154,.85)";
+  return "rgba(78,161,255,.85)";
+}
+
+function currentTargetKey(){
+  const sel = document.getElementById("diploTarget");
+  return sel?.value;
+}
+
+function updateDiplomacyPanel(){
   if(!game) return;
+  const t = currentTargetKey();
+  const rel = game.relations[t];
 
-  document.getElementById("turnPill").textContent = `Month ${game.month} • Year ${game.year}`;
-  document.getElementById("resourcesPill").textContent = `Budget: $${fmtB(game.budgetB)} • Debt: ${Math.round(game.debtPct)}%`;
-  document.getElementById("pcPill").textContent = `Political Capital: ${game.politicalCapital}`;
+  document.getElementById("relationBadge").textContent = `Alliance Rating: ${rel.rating}`;
+  document.getElementById("allyBadge").textContent = `Status: ${rel.allied ? "ALLIED" : "Neutral"}`;
 
-  const stab = stabilityScore();
+  const bar = document.getElementById("relationBar");
+  bar.style.width = rel.rating + "%";
+  bar.style.background = relBarColor(rel.rating);
+
+  const note = document.getElementById("relationNote");
+  let txt = "";
+  if(rel.allied) txt = "You are allied. Asking for aid is easier, but still damages trust.";
+  else txt = "Not allied yet. Improve rating or offer alliance with a strong economy + approval.";
+  if(rel.rating < 25) txt += " (Very low: risk of cut ties.)";
+  note.textContent = txt;
+
+  document.getElementById("allyCountPill").textContent = `Allies: ${countAllies()}`;
+
+  // buttons enabled/disabled
+  document.getElementById("offerBtn").disabled = game.ended || game.politicalCapital < 2;
+  document.getElementById("tradeBtn").disabled = game.ended || game.politicalCapital < 1;
+  document.getElementById("aidBtn").disabled = game.ended;
+}
+
+function offerAlliance(){
+  if(!game || game.ended) return;
+  const t = currentTargetKey();
+  const rel = game.relations[t];
+
+  if(game.politicalCapital < 2){
+    logEntry("warn","Not enough Political Capital","You need PC 2 to offer an alliance.");
+    return;
+  }
+
+  // Requirement: economy must be reasonably high to even be taken seriously
+  if(game.stats.economy < 55){
+    game.politicalCapital -= 2;
+    rel.rating = clamp(rel.rating - rint(1,3));
+    logEntry("bad","Alliance offer rejected", `Your economy looks too weak. ${COUNTRIES[t].name} declines. (Rating -)`);
+    updateDiplomacyPanel();
+    updateUI();
+    return;
+  }
+
+  game.politicalCapital -= 2;
+
+  const strength = (game.stats.economy*0.45 + game.stats.approval*0.35 + rel.rating*0.20);
+  const chance = Math.min(0.88, Math.max(0.15, (strength - 40)/70));
+
+  if(Math.random() < chance){
+    rel.allied = true;
+    rel.rating = clamp(rel.rating + rint(6,12));
+    logEntry("good","Alliance formed", `${COUNTRIES[t].name} agrees to an alliance. (Rating +)`);
+  } else {
+    rel.rating = clamp(rel.rating - rint(2,6));
+    logEntry("bad","Alliance offer fails", `${COUNTRIES[t].name} refuses. (Rating -)`);
+  }
+
+  updateDiplomacyPanel();
+  updateUI();
+}
+
+function sendTradeMission(){
+  if(!game || game.ended) return;
+  const t = currentTargetKey();
+  const rel = game.relations[t];
+
+  if(game.politicalCapital < 1){
+    logEntry("warn","Not enough Political Capital","You need PC 1 for a trade mission.");
+    return;
+  }
+  game.politicalCapital -= 1;
+
+  const boost = rint(3,7);
+  rel.rating = clamp(rel.rating + boost);
+
+  // small economy bump, but env can dip (growth tradeoff)
+  game.stats.economy = clamp(game.stats.economy + rint(1,3));
+  game.stats.env = clamp(game.stats.env - rint(0,2));
+
+  logEntry("info","Trade mission sent", `You improve relations with ${COUNTRIES[t].name}. (Rating +${boost})`);
+  updateDiplomacyPanel();
+  updateUI();
+}
+
+function requestAid(){
+  if(!game || game.ended) return;
+  const t = currentTargetKey();
+  const rel = game.relations[t];
+
+  // success depends on rating (and allied helps)
+  const base = rel.rating;
+  const alliedBonus = rel.allied ? 12 : 0;
+  const chance = Math.min(0.92, Math.max(0.12, (base + alliedBonus - 30)/80));
+
+  // aid amount scales with economy (bigger nations can raise more)
+  const aid = rint(6,14) + Math.floor((game.stats.economy - 50)/10);
+
+  // requesting aid ALWAYS costs trust, even if successful
+  const trustCost = rel.allied ? rint(4,8) : rint(7,12);
+  rel.rating = clamp(rel.rating - trustCost);
+
+  if(Math.random() < chance){
+    game.budgetB += aid;
+    game.debtPct += rint(2,5);
+    game.stats.debt = clamp(game.stats.debt + rint(3,6));
+
+    // slight approval bump because money solves problems (temporarily)
+    game.stats.approval = clamp(game.stats.approval + rint(1,3));
+
+    logEntry("info","Financial aid received",
+      `${COUNTRIES[t].name} sends $${aid}B in support. Debt rises, and trust drops. (Rating -${trustCost})`
+    );
+  } else {
+    // rejection feels bad
+    game.stats.approval = clamp(game.stats.approval - rint(2,5));
+    game.stats.economy = clamp(game.stats.economy - rint(1,3));
+    logEntry("bad","Aid request denied",
+      `${COUNTRIES[t].name} refuses. Your government looks weaker, and trust drops. (Rating -${trustCost})`
+    );
+  }
+
+  // if trust got too low, they can cut ties immediately
+  maybeCutTies(t, "Aid politics went too far.");
+
+  updateDiplomacyPanel();
+  updateUI();
+}
+
+function maybeCutTies(t, reason){
+  const rel = game.relations[t];
+  if(rel.rating > 15) return;
+
+  // if allied, cutting ties is dramatic; if neutral, it’s more like a cold-shoulder event
+  const wasAllied = rel.allied;
+  rel.allied = false;
+  rel.rating = clamp(rel.rating - rint(0,3)); // can dip further
+
+  // global shock effect (your requested "negative effect on all stats")
+  const shock = wasAllied ? rint(4,8) : rint(2,5);
+  applyGlobalShock(shock, t);
+
+  logEntry("bad","Ties cut",
+    `${COUNTRIES[t].name} cuts ties. ${reason} Your nation takes a global confidence hit. (All stats -${shock})`
+  );
+}
+
+function applyGlobalShock(mag, whoKey){
+  // all stats down, inequality/debt up
+  const s = game.stats;
+  s.economy   = clamp(s.economy   - mag);
+  s.approval  = clamp(s.approval  - mag);
+  s.security  = clamp(s.security  - mag);
+  s.env       = clamp(s.env       - Math.max(1, Math.floor(mag*0.6)));
+  s.health    = clamp(s.health    - mag);
+  s.education = clamp(s.education - Math.max(1, Math.floor(mag*0.6)));
+  s.ineq      = clamp(s.ineq      + Math.max(1, Math.floor(mag*0.7)));
+  s.debt      = clamp(s.debt      + Math.max(1, Math.floor(mag*0.7)));
+
+  game.debtPct = Math.min(150, Math.round(game.debtPct + Math.max(1, Math.floor(mag*0.6))));
+}
+
+/* =========================================================
+   START / RESET
+========================================================= */
+
+function startGame(){
+  if(!selectedKey) return;
+  const c = COUNTRIES[selectedKey];
+
+  game = {
+    countryKey: selectedKey,
+    country: c,
+    year: 1,
+    month: 1,
+    ended: false,
+
+    budgetB: c.budgetB,
+    debtPct: c.debtPct,
+    politicalCapital: 4,
+    electionsEveryMonths: 48,
+    monthsInOffice: 0,
+
+    // relations per nation
+    relations: (() => {
+      const rels = {};
+      for(const k of ALL_KEYS){
+        if(k === selectedKey) continue;
+        rels[k] = { rating: clamp(baseRelation(selectedKey,k)), allied: false };
+      }
+      return rels;
+    })(),
+
+    stats: {
+      economy: clamp(c.start.economy),
+      approval: clamp(c.start.approval),
+      security: clamp(c.start.security),
+      env: clamp(c.start.env),
+      health: clamp(c.start.health),
+      education: clamp(c.start.education),
+      ineq: clamp(c.start.ineq),
+      debt: clamp(c.start.debt)
+    }
+  };
+
+  document.getElementById("log").innerHTML = "";
+  logEntry("info","Welcome, Leader.", `You are now running ${c.name}. Balance politics, budget, and diplomacy.`);
+  logEntry("info","Diplomacy added.", "Alliances help stability. Aid raises debt and reduces trust. Too low = cut ties + global shock.");
+
+  initDiplomacyUI();
+
+  // kickoff event
+  runEvents(1);
+
+  updateUI();
+}
+
+function hardReset(){
+  game = null;
+  selectedKey = null;
+  document.getElementById("log").innerHTML = "";
+  document.getElementById("countryKey").textContent = "—";
+  document.getElementById("countryName").textContent = "Pick a country on the map";
+  document.getElementById("countryBlurb").textContent = "Your country changes starting stats, budget, and event behavior.";
+  document.getElementById("traitsBox").textContent = "—";
+  document.getElementById("startBtn").disabled = true;
+  document.querySelectorAll(".country").forEach(n => n.classList.remove("selected"));
+
+  buildStatsUI();
+  buildPoliciesUI();
+  document.getElementById("diploTarget").innerHTML = "";
+  document.getElementById("relationBadge").textContent = "Alliance Rating: —";
+  document.getElementById("allyBadge").textContent = "Status: —";
+  document.getElementById("relationBar").style.width = "0%";
+  document.getElementById("relationBar").style.background = "rgba(255,255,255,.08)";
+  document.getElementById("relationNote").textContent = "Pick a target nation to see your relationship.";
+  document.getElementById("allyCountPill").textContent = "Allies: 0";
+
+  updateHUD();
+  updateUI();
+}
+
+/* =========================================================
+   TURN + POLICIES + EVENTS
+========================================================= */
+
+function drift(){
+  const s = game.stats;
+
+  // debt pressure drag
+  const debtDrag = (game.debtPct > 95 ? 2 : game.debtPct > 80 ? 1 : 0);
+
+  // ally passive bonus: the more allies, the more stable the month feels
+  const allies = countAllies();
+  const allyBoost = Math.min(2, Math.floor(allies / 2)); // 0..2
+
+  s.economy   += rint(-2, 2) - debtDrag + allyBoost;
+  s.approval  += rint(-2, 2) - (s.ineq > 65 ? 1 : 0) + allyBoost;
+  s.security  += rint(-2, 2) + (allies > 0 ? 1 : 0);
+  s.env       += rint(-2, 2) - (s.env < 45 ? 1 : 0);
+  s.health    += rint(-2, 2) + (s.env > 60 ? 1 : 0) - (game.budgetB < 0 ? 1 : 0);
+  s.education += rint(-1, 1) + (stabilityScore() > 60 ? 1 : 0) - (stabilityScore() < 35 ? 1 : 0);
+
+  s.ineq      += rint(-1, 2) + (s.economy < 45 ? 1 : 0) + (game.budgetB < 0 ? 1 : 0);
+  s.debt      += rint(-1, 2) + (game.debtPct > 85 ? 1 : 0);
+
+  for(const k in s) s[k] = clamp(s[k]);
+
+  // Low relationship across many nations can create random "diplomatic incident"
+  maybeDiplomaticIncident();
+}
+
+function maybeDiplomaticIncident(){
+  const rels = Object.entries(game.relations);
+  const badOnes = rels.filter(([k,r]) => r.rating < 22);
+  if(badOnes.length === 0) return;
+
+  // small chance monthly
+  if(Math.random() > 0.22) return;
+
+  const [k, r] = badOnes[Math.floor(Math.random()*badOnes.length)];
+  r.rating = clamp(r.rating - rint(1,4));
+  maybeCutTies(k, "A diplomatic incident escalated.");
+}
+
+function pickEvent(){
+  const s = game.stats;
+  const instability = 100 - stabilityScore();
+
+  // build weighted pool
+  const pool = [];
+  for(const ev of EVENTS){
+    if(!ev.cond(s, game)) continue;
+    let w = ev.baseW;
+
+    if(instability > 55 && (ev.tag === "bad" || ev.tag === "warn")) w += 1;
+    if(instability < 35 && ev.tag === "good") w += 1;
+
+    // if you have allies, reduce bad event frequency slightly
+    if(countAllies() >= 2 && ev.tag === "bad") w = Math.max(1, w - 1);
+
+    for(let i=0;i<w;i++) pool.push(ev);
+  }
+  return pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
+}
+
+function runEvents(count){
+  for(let i=0;i<count;i++){
+    const ev = pickEvent();
+    if(!ev) continue;
+    ev.effect(game.stats, game);
+
+    for(const k in game.stats) game.stats[k] = clamp(game.stats[k]);
+    game.budgetB = Math.round(game.budgetB);
+    game.debtPct = Math.round(game.debtPct);
+
+    logEntry(ev.tag, ev.title, ev.text);
+  }
+}
+
+function doPolicy(id){
+  if(!game || game.ended) return;
+  const pol = POLICIES.find(p => p.id === id);
+  if(!pol) return;
+  if(game.politicalCapital < pol.costPC) return;
+
+  game.politicalCapital -= pol.costPC;
+  pol.apply(game.stats, game);
+
+  // clamp
+  for(const k in game.stats) game.stats[k] = clamp(game.stats[k]);
+  game.budgetB = Math.round(game.budgetB);
+  game.debtPct = Math.round(game.debtPct);
+
+  logEntry("info", `Policy: ${pol.name}`, pol.desc);
+
+  drift();
+  runEvents(extraEvents ? 2 : 1);
+  advanceTurn(true);
+}
+
+function toggleExtraEvents(){
+  extraEvents = !extraEvents;
+  logEntry("info","Event settings changed", extraEvents ? "Extra random events: ON (more chaos)." : "Extra random events: OFF (normal chaos).");
+}
+
+function advanceTurn(fromPolicy){
+  if(!game || game.ended) return;
+
+  game.monthsInOffice += 1;
+
+  // PC regen depends on approval (and allies help)
+  const allies = countAllies();
+  const regen = (game.stats.approval >= 60 ? 3 : game.stats.approval >= 45 ? 2 : 1) + (allies>0 ? 1 : 0);
+  game.politicalCapital = Math.min(9, game.politicalCapital + regen);
+
+  // monthly budget inflow depends on economy
+  const econFactor = (game.stats.economy - 50) / 10;
+  game.budgetB += Math.round(6 + econFactor);
+
+  // debt movement
+  if(game.budgetB < 0) game.debtPct += 1;
+  if(game.budgetB > 55 && game.debtPct > 0) game.debtPct -= 1;
+  game.debtPct = Math.max(0, Math.min(150, Math.round(game.debtPct)));
+
+  // time
+  game.month += 1;
+  if(game.month > 12){ game.month = 1; game.year += 1; }
+
+  if(!fromPolicy){
+    drift();
+    runEvents(extraEvents ? 2 : 1);
+    logEntry("info","Month ended (no major policy).","You didn’t enact a policy, but the world moved anyway.");
+  }
+
+  // lose: any stat <= 0
+  for(const st of STAT_KEYS){
+    if(game.stats[st.key] <= 0){
+      endGame(`${st.name} collapsed to zero.`);
+      return;
+    }
+  }
+
+  // election
+  if(game.monthsInOffice % game.electionsEveryMonths === 0){
+    election();
+    if(game.ended) return;
+  }
+
+  updateUI();
+}
+
+function election(){
+  const score = clamp((game.stats.approval + (100 - game.stats.debt) + game.stats.economy)/3);
+  if(score < 45){
+    endGame(`Election lost. Voters removed you (Election score: ${score}).`);
+  }else{
+    logEntry("good","Election won!", `You survived re-election. Election score: ${score}.`);
+    game.politicalCapital = Math.min(9, game.politicalCapital + 2);
+    game.stats.approval = clamp(game.stats.approval + 3);
+  }
+}
+
+function endGame(reason){
+  game.ended = true;
+  logEntry("bad","Your term ended.", reason + " Hit Start/Restart to try again.");
+  updateUI();
+}
+
+/* =========================================================
+   UI UPDATE
+========================================================= */
+
+function updateUI(){
+  buildDiplomacyIfNeeded();
+
+  document.getElementById("turnPill").textContent = game ? `Month ${game.month} • Year ${game.year}` : "Month 1 • Year 1";
+  document.getElementById("resourcesPill").textContent = game ? `Budget: $${fmtB(game.budgetB)} • Debt: ${Math.round(game.debtPct)}%` : "Budget: $0B • Debt: 0%";
+  document.getElementById("pcPill").textContent = game ? `Political Capital: ${game.politicalCapital}` : "Political Capital: 0";
+
+  const stab = game ? stabilityScore() : "—";
   document.getElementById("stabilityPill").textContent = `Stability: ${stab}`;
+
+  if(!game){
+    updateHUD();
+    return;
+  }
 
   for(const st of STAT_KEYS){
     const val = game.stats[st.key];
@@ -675,296 +1200,21 @@ function updateUI(){
     else note.textContent = "";
   }
 
-  // policy buttons enabled/disabled by PC and game state
+  // enable/disable policy buttons
   for(const pol of POLICIES){
     const btn = document.getElementById("btn_"+pol.id);
-    btn.disabled = (game.ended || game.politicalCapital < pol.costPC);
+    if(btn) btn.disabled = (game.ended || game.politicalCapital < pol.costPC);
   }
-}
 
-function endGame(reason){
-  game.ended = true;
-  logEntry("bad", "Your term ended.", reason + " Hit Start/Restart to try again.");
-  updateUI();
-}
-
-/* =========================================================
-   MAP / COUNTRY SELECTION
-========================================================= */
-function initMap(){
-  const nodes = document.querySelectorAll(".country");
-  nodes.forEach(n => {
-    n.addEventListener("click", () => {
-      const key = n.getAttribute("data-key");
-      pickCountry(key);
-    });
-  });
-}
-
-function pickCountry(key){
-  selectedKey = key;
-  const c = COUNTRIES[key];
-
-  document.getElementById("countryKey").textContent = key;
-  document.getElementById("countryName").textContent = c.name;
-  document.getElementById("countryBlurb").textContent = c.blurb;
-  document.getElementById("traitsBox").innerHTML = c.traits.map(t => `• ${t}`).join("<br>");
-
-  document.getElementById("startBtn").disabled = false;
-
-  document.querySelectorAll(".country").forEach(n => {
-    n.classList.toggle("selected", n.getAttribute("data-key") === key);
-  });
-
+  updateDiplomacyPanel();
   updateHUD();
 }
 
-/* =========================================================
-   START / RESET
-========================================================= */
-function startGame(){
-  if(!selectedKey) return;
-  const c = COUNTRIES[selectedKey];
-
-  game = {
-    countryKey: selectedKey,
-    country: c,
-    year: 1,
-    month: 1,
-    ended: false,
-
-    // resources
-    budgetB: c.budgetB,
-    debtPct: c.debtPct,
-    politicalCapital: 4, // base
-    electionsEveryMonths: 48,
-
-    // internal counters
-    monthsInOffice: 0,
-
-    stats: {
-      economy: clamp(c.start.economy),
-      approval: clamp(c.start.approval),
-      security: clamp(c.start.security),
-      env: clamp(c.start.env),
-      health: clamp(c.start.health),
-      education: clamp(c.start.education),
-      ineq: clamp(c.start.ineq),
-      debt: clamp(c.start.debt)
-    }
-  };
-
-  document.getElementById("log").innerHTML = "";
-  logEntry("info", "Welcome, Leader.", `You are now running ${c.name}. Survive 4-year elections by balancing competing goals.`);
-  logEntry("info", "How to win (kind of).", "Keep stability high, avoid debt spirals, prevent unrest, and try not to wreck the environment.");
-
-  // immediate event to set tone
-  runEvents(1);
-
-  updateUI();
-}
-
-function hardReset(){
-  game = null;
-  selectedKey = null;
-  document.getElementById("log").innerHTML = "";
-  document.getElementById("countryKey").textContent = "—";
-  document.getElementById("countryName").textContent = "Pick a country on the map";
-  document.getElementById("countryBlurb").textContent = "Your country changes starting stats, budget, and event behavior.";
-  document.getElementById("traitsBox").textContent = "—";
-  document.getElementById("startBtn").disabled = true;
-  document.querySelectorAll(".country").forEach(n => n.classList.remove("selected"));
-  updateHUD();
-  buildStatsUI();
-  buildPoliciesUI();
-  updateUI();
-}
-
-/* =========================================================
-   POLICIES / TURNS
-========================================================= */
-function doPolicy(id){
-  if(!game || game.ended) return;
-  const pol = POLICIES.find(p => p.id === id);
-  if(!pol) return;
-  if(game.politicalCapital < pol.costPC) return;
-
-  game.politicalCapital -= pol.costPC;
-
-  const before = {...game.stats};
-  pol.apply(game.stats, game);
-
-  // clamp stats
-  for(const k in game.stats) game.stats[k] = clamp(game.stats[k]);
-  game.budgetB = Math.max(-999, Math.round(game.budgetB));
-  game.debtPct = Math.max(0, Math.round(game.debtPct));
-
-  logEntry("info", `Policy: ${pol.name}`, `${pol.desc}`);
-
-  // policy consequences drift (small)
-  drift();
-
-  // random events
-  runEvents(extraEvents ? 2 : 1);
-
-  // end month
-  advanceTurn(true);
-}
-
-function toggleAutoEvents(){
-  extraEvents = !extraEvents;
-  logEntry("info", "Event settings changed.", extraEvents ? "Extra random events: ON (more chaos)." : "Extra random events: OFF (normal chaos).");
-}
-
-function drift(){
-  // baseline monthly drift: messy governance
-  const s = game.stats;
-
-  // debt pressure makes economy/approval drift down
-  const debtDrag = (game.debtPct > 90 ? 2 : game.debtPct > 75 ? 1 : 0);
-
-  s.economy += rand(-2, 2) - debtDrag;
-  s.approval += rand(-2, 2) - (s.ineq > 65 ? 1 : 0);
-  s.security += rand(-2, 2) - (s.security < 45 ? 1 : 0);
-  s.env += rand(-2, 2) - (s.env < 45 ? 1 : 0);
-
-  // health depends on env + budget a bit
-  s.health += rand(-2, 2) + (s.env > 60 ? 1 : 0) - (game.budgetB < 0 ? 1 : 0);
-
-  // education rises slowly if you’re stable, drops if chaos
-  s.education += rand(-1, 1) + (stabilityScore() > 60 ? 1 : 0) - (stabilityScore() < 35 ? 1 : 0);
-
-  // inequality drifts worse if economy is low or budget is negative
-  s.ineq += rand(-1, 2) + (s.economy < 45 ? 1 : 0) + (game.budgetB < 0 ? 1 : 0);
-
-  // debt stat mirrors debtPct pressure (not 1:1)
-  s.debt += rand(-1, 2) + (game.debtPct > 80 ? 1 : 0);
-
-  for(const k in s) s[k] = clamp(s[k]);
-}
-
-function advanceTurn(fromPolicy){
-  if(!game || game.ended) return;
-
-  // month ticks
-  game.monthsInOffice += 1;
-
-  // PC regeneration: higher approval = easier governance
-  const regen = (game.stats.approval >= 60 ? 3 : game.stats.approval >= 45 ? 2 : 1);
-  game.politicalCapital = Math.min(8, game.politicalCapital + regen);
-
-  // budget "tax receipts" vary with economy
-  const econFactor = (game.stats.economy - 50) / 10; // -5..+5ish
-  game.budgetB += Math.round(6 + econFactor); // baseline monthly inflow
-
-  // debtPct changes if budget negative
-  if(game.budgetB < 0) game.debtPct += 1;
-  if(game.budgetB > 50 && game.debtPct > 0) game.debtPct -= 1;
-
-  // clamp debtPct
-  game.debtPct = Math.max(0, Math.min(150, Math.round(game.debtPct)));
-
-  // progress time
-  game.month += 1;
-  if(game.month > 12){ game.month = 1; game.year += 1; }
-
-  if(!fromPolicy){
-    drift();
-    runEvents(extraEvents ? 2 : 1);
-    logEntry("info", "Month ended (no major policy).", "You didn’t enact a policy, but the world still moved.");
+function buildDiplomacyIfNeeded(){
+  // safety: if game exists but diplomacy not set up
+  if(game && document.getElementById("diploTarget").children.length === 0){
+    initDiplomacyUI();
   }
-
-  // lose conditions: any key stat hits 0
-  for(const st of STAT_KEYS){
-    if(game.stats[st.key] <= 0){
-      endGame(`${st.name} collapsed to zero.`);
-      updateUI();
-      return;
-    }
-  }
-
-  // election check every 48 months
-  if(game.monthsInOffice % game.electionsEveryMonths === 0){
-    election();
-    if(game.ended){ updateUI(); return; }
-  }
-
-  updateUI();
-}
-
-function election(){
-  const score = clamp((game.stats.approval + (100 - game.stats.debt) + game.stats.economy)/3);
-  if(score < 45){
-    endGame(`Election lost. Voters removed you (Election score: ${score}).`);
-  }else{
-    logEntry("good", "Election won!", `You survived re-election. Election score: ${score}. The problems didn’t go away though.`);
-    // winning resets some momentum
-    game.politicalCapital = Math.min(8, game.politicalCapital + 2);
-    game.stats.approval = clamp(game.stats.approval + 3);
-  }
-}
-
-/* =========================================================
-   EVENTS: weighted + trait modifiers + instability scaling
-========================================================= */
-function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-
-function runEvents(count){
-  if(!game || game.ended) return;
-  const picks = [];
-
-  // Instability raises event volume/harshness
-  const instability = 100 - stabilityScore();
-
-  for(let i=0;i<count;i++){
-    const ev = pickEvent(instability);
-    if(!ev) continue;
-    picks.push(ev);
-    ev.effect(game.stats, game);
-    // clamp all stats
-    for(const k in game.stats) game.stats[k] = clamp(game.stats[k]);
-    game.budgetB = Math.round(game.budgetB);
-    game.debtPct = Math.round(game.debtPct);
-
-    logEntry(ev.tag, ev.title, ev.text + ` (Instability: ${instability})`);
-  }
-}
-
-function pickEvent(instability){
-  const cmods = game.country.eventMods || {};
-  const s = game.stats;
-
-  // build a weighted list
-  const pool = [];
-  for(const ev of EVENTS){
-    if(!ev.cond(s, game)) continue;
-
-    // base weight modified by country traits
-    const mod = cmods[ev.type] || 0;
-    let w = ev.baseW + mod;
-
-    // instability pushes bad stuff slightly more often
-    if(instability > 55 && (ev.tag === "bad" || ev.tag === "warn")) w += 1;
-    if(instability < 35 && ev.tag === "good") w += 1;
-
-    // if env is awful, climate events more likely
-    if(ev.type === "climate" || ev.type === "disaster"){
-      if(s.env < 50) w += 1;
-      if(s.env < 35) w += 2;
-    }
-
-    // security low makes security events more likely
-    if(ev.type === "security" && s.security < 50) w += 2;
-
-    // unrest risk rises with inequality and low approval
-    if(ev.type === "unrest" && (s.ineq > 60 || s.approval < 45)) w += 2;
-
-    w = Math.max(0, w);
-    for(let i=0;i<w;i++) pool.push(ev);
-  }
-
-  if(pool.length === 0) return null;
-  return pool[Math.floor(Math.random()*pool.length)];
 }
 
 /* =========================================================
@@ -974,7 +1224,6 @@ buildStatsUI();
 buildPoliciesUI();
 initMap();
 updateHUD();
-updateUI();
 </script>
 </body>
 </html>
