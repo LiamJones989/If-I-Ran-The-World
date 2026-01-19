@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>If I Ran the World — Mini Country Simulator</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#111b2e; --card2:#0f1a30;
+      --text:#eaf1ff; --muted:#b7c6e6; --accent:#4ea1ff; --bad:#ff5a5a; --good:#5dff9a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#070b15, #0b1220);color:var(--text)}
+    a{color:inherit}
+    .wrap{max-width:1100px;margin:0 auto;padding:22px}
+    .top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .title{display:flex;flex-direction:column;gap:6px}
+    h1{margin:0;font-size:1.6rem;letter-spacing:.3px}
+    .sub{color:var(--muted);font-size:.95rem;line-height:1.35}
+    .row{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:16px}
+    @media (max-width: 900px){ .row{grid-template-columns:1fr} }
+
+    .card{background:rgba(17,27,46,.9);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .card h2{margin:0 0 10px 0;font-size:1.1rem}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .stat{background:rgba(15,26,48,.8);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px}
+    .stat .k{color:var(--muted);font-size:.85rem}
+    .stat .v{font-size:1.25rem;font-weight:700;margin-top:4px}
+
+    .bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
+    .bar > div{height:100%;border-radius:999px;width:50%}
+
+    .btns{display:flex;gap:10px;flex-wrap:wrap}
+    button{
+      cursor:pointer; border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg, rgba(78,161,255,.20), rgba(78,161,255,.10));
+      color:var(--text); padding:10px 12px; border-radius:12px; font-weight:650;
+      transition:.15s transform ease, .15s opacity ease, .15s border-color ease;
+    }
+    button:hover{transform:translateY(-1px);border-color:rgba(78,161,255,.45)}
+    button:active{transform:translateY(0px);opacity:.9}
+    .danger{background:linear-gradient(180deg, rgba(255,90,90,.25), rgba(255,90,90,.12))}
+    .neutral{background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06))}
+    .good{background:linear-gradient(180deg, rgba(93,255,154,.18), rgba(93,255,154,.08))}
+    .small{font-size:.9rem;color:var(--muted)}
+    .log{max-height:320px;overflow:auto;border-radius:14px;background:rgba(10,15,30,.55);border:1px solid rgba(255,255,255,.08);padding:10px}
+    .entry{padding:10px;border-radius:12px;background:rgba(17,27,46,.65);border:1px solid rgba(255,255,255,.06);margin-bottom:10px}
+    .entry:last-child{margin-bottom:0}
+    .tag{display:inline-block;font-size:.78rem;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.10);color:var(--muted);margin-right:8px}
+    .tag.bad{border-color:rgba(255,90,90,.35);color:#ffd0d0}
+    .tag.good{border-color:rgba(93,255,154,.35);color:#d9ffe9}
+    .tag.info{border-color:rgba(78,161,255,.35);color:#d7ecff}
+    .footer{margin-top:14px;color:var(--muted);font-size:.9rem;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .pill{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">
+        <h1>If I Ran the World 🌎</h1>
+        <div class="sub">
+          A tiny simulator that shows why running a country is basically impossible.
+          Balance <b>Economy</b>, <b>Public Support</b>, <b>Security</b>, and <b>Environment</b>.
+        </div>
+      </div>
+      <div class="pill mono" id="statusLine">Week 1 • Stability: 50</div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>National Dashboard</h2>
+        <div class="grid2">
+          <div class="stat">
+            <div class="k">Economy</div>
+            <div class="v" id="economyV">50</div>
+            <div class="bar"><div id="economyB"></div></div>
+            <div class="small">Jobs, prices, growth.</div>
+          </div>
+          <div class="stat">
+            <div class="k">Public Support</div>
+            <div class="v" id="supportV">50</div>
+            <div class="bar"><div id="supportB"></div></div>
+            <div class="small">Approval, trust, protests.</div>
+          </div>
+          <div class="stat">
+            <div class="k">Security</div>
+            <div class="v" id="securityV">50</div>
+            <div class="bar"><div id="securityB"></div></div>
+            <div class="small">Crime, defense, stability.</div>
+          </div>
+          <div class="stat">
+            <div class="k">Environment</div>
+            <div class="v" id="envV">50</div>
+            <div class="bar"><div id="envB"></div></div>
+            <div class="small">Pollution, climate, health.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px" class="small">
+          Rule of the game: every decision helps something and hurts something else.
+          If any stat hits <b>0</b>, your term ends.
+        </div>
+
+        <div style="margin-top:12px" class="btns">
+          <button onclick="decision('taxCuts')">Cut Taxes 💸</button>
+          <button onclick="decision('raiseTaxes')" class="neutral">Raise Taxes 🧾</button>
+          <button onclick="decision('healthcare')" class="good">Fund Healthcare 🏥</button>
+          <button onclick="decision('police')" class="neutral">Increase Policing 🚓</button>
+          <button onclick="decision('renewables')" class="good">Invest in Renewables ☀️</button>
+          <button onclick="decision('factoryDereg')" class="danger">Deregulate Industry 🏭</button>
+          <button onclick="decision('education')">Boost Education 📚</button>
+          <button onclick="decision('foreignAid')" class="neutral">Foreign Aid 🤝</button>
+          <button onclick="advanceWeek()" class="neutral">Skip Decision →</button>
+          <button onclick="resetGame()" class="danger">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>News & Consequences</h2>
+        <div class="log" id="log"></div>
+        <div class="footer">
+          <div class="pill">Goal: survive <b>12 weeks</b></div>
+          <div class="pill">Tip: keep everything above <b>30</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let week = 1;
+    let stats = { economy: 50, support: 50, security: 50, env: 50 };
+    let ended = false;
+
+    const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)));
+
+    function setBars(){
+      const map = [
+        ["economy","economyV","economyB"],
+        ["support","supportV","supportB"],
+        ["security","securityV","securityB"],
+        ["env","envV","envB"]
+      ];
+      for (const [k,vId,bId] of map){
+        const val = stats[k];
+        document.getElementById(vId).textContent = val;
+        const bar = document.getElementById(bId);
+        bar.style.width = val + "%";
+        // color by value (no specific colors asked, but we’ll keep simple thresholds)
+        bar.style.background = val < 30 ? "rgba(255,90,90,.9)" : (val > 70 ? "rgba(93,255,154,.85)" : "rgba(78,161,255,.85)");
+      }
+      const stability = clamp((stats.economy + stats.support + stats.security + stats.env)/4);
+      document.getElementById("statusLine").textContent = `Week ${week} • Stability: ${stability}`;
+    }
+
+    function log(tag, title, text){
+      const el = document.createElement("div");
+      el.className = "entry";
+      el.innerHTML = `
+        <div style="margin-bottom:6px">
+          <span class="tag ${tag}">${tag.toUpperCase()}</span>
+          <b>${title}</b>
+        </div>
+        <div class="small" style="color:var(--text)">${text}</div>
+      `;
+      const box = document.getElementById("log");
+      box.prepend(el);
+    }
+
+    function gameOver(reason){
+      ended = true;
+      log("bad","Your term ended.","" + reason + " Hit Reset to try again.");
+    }
+
+    function applyDelta(d){
+      for (const k in d) stats[k] = clamp(stats[k] + d[k]);
+    }
+
+    function randomEvent(){
+      const events = [
+        { tag:"info", title:"Global markets wobble", text:"Imports get pricier and businesses panic.", d:{ economy:-6, support:-2 } },
+        { tag:"bad",  title:"Major protest", text:"People are mad about something (they always are).", d:{ support:-8, security:-3 } },
+        { tag:"info", title:"Tech boom", text:"New startups surge. Jobs rise, but energy use climbs.", d:{ economy:+7, env:-3 } },
+        { tag:"bad",  title:"Severe storm season", text:"Disaster relief costs spike and pollution worsens.", d:{ economy:-4, env:-8, support:-2 } },
+        { tag:"good", title:"Community volunteering wave", text:"Trust rises. Small drop in productivity as people take time off.", d:{ support:+7, economy:-2 } },
+        { tag:"info", title:"Border tensions", text:"People want safety, but costs increase.", d:{ security:-5, support:-2 } },
+        { tag:"good", title:"Medical breakthrough", text:"Public health improves and optimism rises.", d:{ support:+5, economy:+2 } },
+      ];
+      const e = events[Math.floor(Math.random()*events.length)];
+      applyDelta(e.d);
+      log(e.tag, e.title, `${e.text} (${deltaText(e.d)})`);
+    }
+
+    function deltaText(d){
+      const parts=[];
+      for (const k in d){
+        const pretty = k==="env" ? "Environment" : k[0].toUpperCase()+k.slice(1);
+        const sign = d[k] >= 0 ? "+" : "";
+        parts.push(`${pretty} ${sign}${d[k]}`);
+      }
+      return parts.join(", ");
+    }
+
+    function decision(key){
+      if(ended) return;
+      const choices = {
+        taxCuts: {
+          title:"Cut Taxes 💸",
+          text:"More money in pockets. Budget takes a hit.",
+          d:{ economy:+8, support:+3, security:-3, env:-2 }
+        },
+        raiseTaxes: {
+          title:"Raise Taxes 🧾",
+          text:"More funding available, but people complain immediately.",
+          d:{ economy:-3, support:-6, security:+3, env:+2 }
+        },
+        healthcare: {
+          title:"Fund Healthcare 🏥",
+          text:"Health outcomes improve, but it costs a lot up front.",
+          d:{ economy:-4, support:+7, security:+1, env:+1 }
+        },
+        police: {
+          title:"Increase Policing 🚓",
+          text:"Crime drops, but trust can fall if it feels heavy-handed.",
+          d:{ security:+8, support:-4, economy:-1, env:0 }
+        },
+        renewables: {
+          title:"Invest in Renewables ☀️",
+          text:"Cleaner energy and future savings, but short-term costs.",
+          d:{ env:+10, economy:-4, support:+2, security:-1 }
+        },
+        factoryDereg: {
+          title:"Deregulate Industry 🏭",
+          text:"Factories expand fast. Pollution and health complaints rise.",
+          d:{ economy:+9, env:-10, support:-3, security:+1 }
+        },
+        education: {
+          title:"Boost Education 📚",
+          text:"Long-term productivity rises. Short-term budget pain.",
+          d:{ economy:+3, support:+2, security:+1, env:-1 }
+        },
+        foreignAid: {
+          title:"Foreign Aid 🤝",
+          text:"International respect rises, but citizens want help at home.",
+          d:{ support:-2, security:+3, economy:-2, env:+1 }
+        }
+      };
+
+      const c = choices[key];
+      applyDelta(c.d);
+      log("info", c.title, `${c.text} (${deltaText(c.d)})`);
+      advanceWeek(true);
+    }
+
+    function advanceWeek(fromDecision=false){
+      if(ended) return;
+
+      // weekly drift (real life is messy)
+      applyDelta({
+        economy: (Math.random()*5 - 2),
+        support: (Math.random()*5 - 2),
+        security:(Math.random()*5 - 2),
+        env:     (Math.random()*5 - 2)
+      });
+
+      if (Math.random() < 0.75) randomEvent();
+
+      setBars();
+
+      // lose conditions
+      for (const k in stats){
+        if (stats[k] <= 0){
+          const names = {economy:"Economy",support:"Public Support",security:"Security",env:"Environment"};
+          gameOver(`${names[k]} collapsed.`);
+          setBars();
+          return;
+        }
+      }
+
+      if (!fromDecision) log("info","Week passed","You didn’t choose a policy this week. Politics still happened anyway.");
+
+      if (week >= 12){
+        ended = true;
+        log("good","You survived 12 weeks!","Congrats. Nobody is perfectly happy, but the country didn’t collapse. That’s basically a win.");
+        return;
+      }
+
+      week++;
+      setBars();
+    }
+
+    function resetGame(){
+      week = 1;
+      stats = { economy: 50, support: 50, security: 50, env: 50 };
+      ended = false;
+      document.getElementById("log").innerHTML = "";
+      log("info","Welcome, Leader.","Make a decision. Watch how every choice has tradeoffs.");
+      setBars();
+    }
+
+    resetGame();
+  </script>
+</body>
+</html>
